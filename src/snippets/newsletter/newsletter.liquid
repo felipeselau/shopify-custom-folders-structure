@@ -1,0 +1,146 @@
+{% if settings.newsletter_active %}
+<div class="schutz-newsletter" data-delay="{{ settings.newsletter_delay }}" role="dialog" aria-modal="true"
+	aria-label="Email Signup">
+	<div class="schutz-newsletter__content">
+		<div class="schutz-newsletter__close">
+			<button alt="close">{% render 'icon-close' %}</button>
+		</div>
+		<h3>{{ settings.newsletter_heading }}</h3>
+		{% form 'customer' %}
+		<input type="hidden" name="contact[tags]" value="newsletter">
+		{% if form.posted_successfully? %}
+		<p>{{ 'newsletter.success' | t }}</p>
+		{% else %}
+		{% if form.errors %}
+		<p id="email_popup_error">{{ form.errors | default_errors }}</p>
+		{% endif %}
+		<div class="schutz-newsletter__email">
+			<input class="schutz-input" id="email_signup_popup" name="contact[email]" type="email"
+				value="{% if customer.email != blank %}{{ customer.email }}{% endif %}"
+				placeholder="{{ 'newsletter.title' | t }}" {% if form.errors %} aria-describedby="email_popup_error" autofocus
+				{% endif %} autocorrect="off" autocomplete="off" autocapitalize="off">
+			<button type="submit" aria-label="Signup"></button>
+		</div>
+		{% endif %}
+		{% endform %}
+	</div>
+</div>
+
+<style>
+	.schutz-newsletter {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		opacity: 0;
+		background-color: rgba(0, 0, 0, .4);
+		z-index: 3;
+		transition: opacity 1s ease-in-out;
+	}
+
+	.schutz-newsletter h3 {
+		color: #fff;
+		font-size: 20px;
+		letter-spacing: 1px;
+		line-height: 24px;
+		text-transform: uppercase;
+	}
+
+	.schutz-newsletter button {
+		background: #000;
+		border: none;
+		cursor: pointer
+	}
+
+	.schutz-newsletter button svg {
+		color: #fff;
+		background: #000;
+	}
+
+	.schutz-newsletter__content {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		-webkit-transform: translate(-50%, -50%);
+		transform: translate(-50%, -50%);
+		width: 400px;
+		max-width: calc(100% - 48px);
+		padding: 48px;
+		color: #fff;
+		background-color: #000;
+	}
+
+	.schutz-newsletter .schutz-footer__email-input,
+	.schutz-newsletter .schutz-input,
+	.schutz-newsletter .schutz-input--dark,
+	.schutz-newsletter .schutz-nav__search-input {
+		width: 100%;
+	}
+
+	.schutz-newsletter::-webkit-input-placeholder,
+	.schutz-newsletter::-ms-input-placeholder,
+	.schutz-newsletter::placeholder {
+		color: #fff;
+	}
+
+	.schutz-newsletter__email {
+		position: relative
+	}
+
+	.schutz-newsletter__email button[type=submit] {
+		background-image: url("data:image/svg+xml;charset=utf8,%3Csvg%20width%3D%2722%27%20height%3D%2716%27%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20xmlns%3Axlink%3D%27http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%27%3E%3Cdefs%3E%3Cpath%20id%3D%27a%27%20d%3D%27M22.7%2010.85L16.15%204.3a1.02%201.02%200%200%200-1.44%201.45l4.8%204.8H2.02a1.02%201.02%200%200%200%200%202.04h17.49l-4.8%204.8a1.02%201.02%200%201%200%201.44%201.45l6.55-6.55c.4-.4.4-1.04%200-1.44z%27%2F%3E%3C%2Fdefs%3E%3Cg%20transform%3D%27translate(-1%20-4)%27%20fill%3D%27none%27%20fill-rule%3D%27evenodd%27%3E%3Cmask%20id%3D%27b%27%20fill%3D%27%23fff%27%3E%3Cuse%20xlink%3Ahref%3D%27%23a%27%20%2F%3E%3C%2Fmask%3E%3Cuse%20fill%3D%27%23000%27%20fill-rule%3D%27nonzero%27%20xlink%3Ahref%3D%27%23a%27%20%2F%3E%3Cg%20mask%3D%27url(%23b)%27%20fill%3D%27%23000%27%3E%3Cpath%20d%3D%27M0%200h24v24H0z%27%20%2F%3E%3C%2Fg%3E%3Cg%20mask%3D%27url(%23b)%27%20fill%3D%27%23FFF%27%3E%3Cpath%20d%3D%27M0%200h24v24H0z%27%20%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+		width: 22px;
+		height: 16px;
+		position: absolute;
+		top: 50%;
+		-webkit-transform: translateY(-50%);
+		transform: translateY(-50%);
+		right: 0
+	}
+
+	.schutz-newsletter .schutz-input {
+		background-color: transparent;
+		outline: 0;
+		border: none;
+		border-bottom: 2px solid #fff;
+		color: #fff;
+		line-height: 40px;
+		letter-spacing: 1px;
+		padding: 8px 0;
+	}
+
+	.schutz-newsletter__close {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+	}
+
+	.schutz-newsletter__close svg {
+		width: 16px;
+		height: 16px
+	}
+</style>
+
+<script>
+	(function () {
+		const newsletterViewed = localStorage.getItem('schutz_newsletter_viewed')
+		const newsletter = document.querySelector('.schutz-newsletter')
+		const close = newsletter.querySelector(".schutz-newsletter__close")
+
+		if (newsletterViewed) return
+
+		window.addEventListener("scroll", () => {
+			if (localStorage.getItem('schutz_newsletter_viewed')) return
+			newsletter.style.cssText = "display: block; opacity: 1;"
+			localStorage.setItem("schutz_newsletter_viewed", !0)
+		})
+
+		close.addEventListener("click", () => {
+			newsletter.style.cssText = "display: none; opacity: 0;"
+			localStorage.setItem("schutz_newsletter_viewed", !0)
+		})
+	})()
+</script>
+{% endif %}

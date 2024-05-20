@@ -1,0 +1,233 @@
+{{ 'component-newsletter.css' | asset_url | stylesheet_tag }}
+{{ 'newsletter-section.css' | asset_url | stylesheet_tag }}
+
+<style>
+  .coupon-validator__submit[disabled] {
+    opacity: 0.8;
+  }
+</style>
+
+<div class="coupon-validator newsletter center{% if section.settings.full_width == false %} newsletter--narrow page-width{% endif%}">
+  <div class="newsletter__wrapper color-{{ section.settings.color_scheme }} gradient">
+    {%- for block in section.blocks -%}
+      {%- case block.type -%}
+        {%- when '@app' -%}
+          {% render block %}
+        {%- when 'heading' -%}
+          <h2 class="h1" {{ block.shopify_attributes }}>{{ block.settings.heading | escape }}</h2>
+        {%- when 'paragraph' -%}
+          <div class="newsletter__subheading rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+        {%- when 'keyword_form' -%}
+          <div {{ block.shopify_attributes }}>
+            <div class="newsletter-form">
+              <div class="newsletter-form__field-wrapper">
+                <div class="field">
+                  <input
+                    id="CouponValidator--{{ section.id }}"
+                    name="coupon[key]"
+                    class="field__input"
+                    value=""
+                    aria-required="true"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    placeholder="Key"
+                  >
+                  <label class="field__label" for="CouponValidator--{{ section.id }}">
+                    {{ section.settings.placeholder }}
+                  </label>
+                  <button
+                    type="submit"
+                    class="newsletter-form__button field__button coupon-validator__submit"
+                    name="commit"
+                    id="validate"
+                    aria-label="Validate" 
+                    data-timer="0"
+                  >
+                    {{ section.settings.button }}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <h3 class="coupon-validator--result" style="display: none;"></h3>
+          </div>
+      {%- endcase -%}
+    {%- endfor -%}
+  </div>
+</div>
+
+<script>
+  (() => {
+    var buttonElm = document.querySelector(".coupon-validator button");
+    if (!buttonElm) return;
+    buttonElm.addEventListener("click", function() {
+      var input = document.querySelector(".coupon-validator input");
+      if (!input) return;
+      var value = input.value;
+      if (!value) return;
+      buttonElm.innerHTML = `{{ section.settings.button_loading }}`;
+      buttonElm.setAttribute("disabled", true);
+      fetch(`https://hook.us1.make.com/u4q9cip4sb6vj2aawu1v2ef3zj58otay?key=${value}`)
+      .then((response) => response.text())
+      .then((dataString) => {
+        const { data, message } = JSON.parse(dataString);
+        var resultElm = document.querySelector(".coupon-validator--result");
+        if (!resultElm) return;
+        resultElm.style.display = 'block';
+        if (!data) {
+          buttonElm.innerHTML = `{{ section.settings.button }}`;
+          resultElm.innerHTML = `{{ section.settings.invalid_message }}`;
+          buttonElm.removeAttribute("disabled");
+          buttonElm.setAttribute("disabled", true);
+          buttonElm.setAttribute("data-timer", "3");
+          function timer() {
+            var time = Number(buttonElm.dataset.timer)-1;
+            buttonElm.setAttribute("data-timer", time);
+            if (time > 0) {
+              setTimeout(timer, 1000);
+            } else {
+              buttonElm.removeAttribute("disabled");
+              buttonElm.innerHTML = `{{ section.settings.button }}`;
+            }
+          }
+          timer();
+        } else {
+          resultElm.innerHTML = `{{ section.settings.success_message }}`.replace("[coupon]", data);
+          buttonElm.innerHTML = `{{ section.settings.button }}`;
+          input.setAttribute("disabled", true);
+          buttonElm.remove();
+        }
+      })
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Coupon Validator",
+  "tag": "section",
+  "class": "spaced-section spaced-section--full-width",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.coupon-validator.settings.paragraph.content"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        {
+          "value": "accent-1",
+          "label": "t:sections.coupon-validator.settings.color_scheme.options__1.label"
+        },
+        {
+          "value": "accent-2",
+          "label": "t:sections.coupon-validator.settings.color_scheme.options__2.label"
+        },
+        {
+          "value": "background-1",
+          "label": "t:sections.coupon-validator.settings.color_scheme.options__3.label"
+        },
+        {
+          "value": "background-2",
+          "label": "t:sections.coupon-validator.settings.color_scheme.options__4.label"
+        },
+        {
+          "value": "inverse",
+          "label": "t:sections.coupon-validator.settings.color_scheme.options__5.label"
+        }
+      ],
+      "default": "background-1",
+      "label": "t:sections.coupon-validator.settings.color_scheme.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "default": true,
+      "label": "t:sections.coupon-validator.settings.full_width.label"
+    },
+    {
+      "type": "text",
+      "id": "placeholder",
+      "label": "t:sections.coupon-validator.settings.placeholder.label",
+      "default": "KEYWORD"
+    },
+    {
+      "type": "text",
+      "id": "button",
+      "label": "t:sections.coupon-validator.settings.button.label",
+      "default": "VALIDATE"
+    },
+    {
+      "type": "text",
+      "id": "button_loading",
+      "label": "t:sections.coupon-validator.settings.button_loading.label",
+      "default": "VALIDATING"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "t:sections.coupon-validator.settings.success_message.label",
+      "default": "YOU WON A DISCOUNT COUPON: [coupon]",
+      "info": "t:sections.coupon-validator.settings.success_message.info"
+    },
+    {
+      "type": "text",
+      "id": "invalid_message",
+      "label": "t:sections.coupon-validator.settings.invalid_message.label",
+      "default": "INVALID KEY!"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "name": "t:sections.coupon-validator.blocks.heading.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "default": "Validate your keyword",
+          "label": "t:sections.coupon-validator.blocks.heading.settings.heading.label"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "name": "t:sections.coupon-validator.blocks.paragraph.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "default": "<p>Find a keyword in our store and validate it here</p>",
+          "label": "t:sections.coupon-validator.blocks.paragraph.settings.paragraph.label"
+        }
+      ]
+    },
+    {
+      "type": "keyword_form",
+      "name": "t:sections.coupon-validator.blocks.keyword_form.name",
+      "limit": 1
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Coupon Validator",
+      "blocks": [
+        {
+          "type": "heading"
+        },
+        {
+          "type": "paragraph"
+        },
+        {
+          "type": "keyword_form"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

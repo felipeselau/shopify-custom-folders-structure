@@ -1,0 +1,243 @@
+{{ 'section-social.css' | asset_url | stylesheet_tag }}
+
+<div class="about-us-social background-shadow{% if section.settings.title == blank %} no-heading{% endif %}">
+  <div class="page-width">
+    <div class="title-wrapper--self-padded-mobile{% if section.settings.title == blank %} title-wrapper-with-link--no-heading{% endif %}">
+      <h1 class="title">
+        {{ section.settings.title | escape }}
+      </h1>
+      {% if section.settings.subtitle != blank %}
+        <h2 class="subtitle">{{ section.settings.subtitle | escape }}</h2>
+      {% endif %}
+    </div>
+    <div class="social-wrapper">
+      <ul class="social-list grid grid--1-col{% if section.blocks.size > 3 and section.settings.image_width != 'full' %} grid--2-col-tablet grid--4-col-desktop{% elsif section.blocks.size > 3 and section.settings.image_width == 'full' %} grid--2-col-tablet{% else %} grid--3-col-tablet{% endif %}"
+        id="Slider-{{ section.id }}"
+        role="list"
+      >
+        {%- liquid
+          assign highest_ratio = 0
+          for block in section.blocks
+            if block.settings.image.aspect_ratio > highest_ratio
+              assign highest_ratio = block.settings.image.aspect_ratio
+            endif
+          endfor
+        -%}
+        {%- for block in section.blocks -%}
+          <li class="social-list__item grid__item{% if section.settings.column_alignment == 'center' %} center{% endif %}" {{ block.shopify_attributes }}>
+            <div class="social-card {{ block.settings.social_media }}">
+              {%- if block.settings.image != blank -%}
+                {% if section.settings.image_ratio == 'adapt' or section.settings.image_ratio == 'circle' %}
+                  {% assign spaced_image = true %}
+                {% endif %}
+                <div class="social-card__image-wrapper {% if block.settings.image_mb != blank %}small-hide{% endif %} social-card__image-wrapper--{{ section.settings.image_width }}-width{% if section.settings.image_width != 'full' or spaced_image %} social-card-spacing{% endif %}">
+                  <div class="media media--transparent media--{{ section.settings.image_ratio }}"
+                    {% if section.settings.image_ratio == 'adapt' %}
+                      style="padding-bottom: {{ 1 | divided_by: highest_ratio | times: 100 }}%;"
+                    {% endif %}>
+                    <img
+                      srcset="{%- if block.settings.image.width >= 275 -%}{{ block.settings.image | img_url: '275x' }} 275w,{%- endif -%}
+                        {%- if block.settings.image.width >= 550 -%}{{ block.settings.image | img_url: '550x' }} 550w,{%- endif -%}
+                        {%- if block.settings.image.width >= 710 -%}{{ block.settings.image | img_url: '710x' }} 710w,{%- endif -%}
+                        {%- if block.settings.image.width >= 1420 -%}{{ block.settings.image | img_url: '1420x' }} 1420w,{%- endif -%}"
+                      src="{{ block.settings.image | img_url: 'master' }}"
+                      sizes="(min-width: 990px) {% if section.blocks.size <= 2 %}710px{% else %}550px{% endif %},
+                        (min-width: 750px) {% if section.blocks.size == 1 %}710px{% else %}550px{% endif %},
+                        calc(100vw - 30px)"
+                      alt="{{ block.settings.image.alt }}"
+                      height="{{ block.settings.image.height }}"
+                      width="{{ block.settings.image.width }}"
+                     
+                    >
+                  </div>
+                </div>
+              {%- endif -%}
+              
+              <div class="social-card__info">
+                {%- if block.settings.button_link != blank -%}<a target="_blank" href="{{ block.settings.button_link }}" tabindex="-1" aria-hidden="true">{%- endif -%}
+                  {%- if block.settings.image_icon != blank -%}
+                    <img
+                      srcset="{{ block.settings.image_icon }}"
+                      src="{{ block.settings.image_icon }}"
+                     
+                      {% if block.settings.is_email %}alt="email"{%- endif -%}
+                    >
+                  {%- endif -%}
+                  {% unless block.settings.is_email %}
+                    <h3>{{ block.settings.title | escape }}</h3>
+                  {% endunless %}
+                {%- if block.settings.button_link != blank -%}</a>{%- endif -%}
+
+                {% if block.settings.is_email %}
+                  {%- form 'customer', id: 'Contact' -%}
+                    <input type="hidden" name="contact[tags]" value="newsletter">
+                    <div class="newsletter-form__field-wrapper-social">
+                      <div class="field">
+                        <input
+                          id="NewsletterForm--{{ block.id }}"
+                          type="email"
+                          name="contact[email]"
+                          class="field__input"
+                          value="{{ form.email }}"
+                          aria-required="true"
+                          autocorrect="off"
+                          autocapitalize="off"
+                          autocomplete="email"
+                          {% if form.errors %}
+                            autofocus
+                            aria-invalid="true"
+                            aria-describedby="Contact-error"
+                          {% elsif form.posted_successfully? %}
+                            aria-describedby="Contact-success"
+                          {% endif %}
+                          placeholder="{{ block.settings.title }}"
+                          required
+                        >
+                        <label class="field__label" for="NewsletterForm--{{ block.id }}">
+                          {{ block.settings.title }}
+                        </label>
+                      </div>
+                      <button type="submit" class="field__button follow-bar" name="commit" id="Subscribe" aria-label="{{ block.settings.button_label }} with your email address">
+                        {{ block.settings.button_label }}
+                      </button>
+                      {%- if form.errors -%}
+                        <small class="newsletter-form__message form__message" id="Contact-error">{% render 'icon-error' %}{{ form.errors.translated_fields['email'] | capitalize }} {{ form.errors.messages['email'] }}</small>
+                      {%- endif -%}
+                    </div>
+                    {%- if form.posted_successfully? -%}
+                      <h3 class="newsletter-form__message newsletter-form__message--success form__message" id="Contact-success" tabindex="-1" autofocus>{% render 'icon-success' %}{{ 'newsletter.success' | t }}</h3>
+                    {%- endif -%}
+                  {%- endform -%}
+                {% endif %}
+
+
+              </div>
+              <div class="follow-bar">
+                {%- if block.settings.button_link != blank -%}
+                  <a target="_blank" href="{{ block.settings.button_link }}" aria-label="Follow us on {{ block.settings.social_media }} {{ block.settings.title }}">
+                    {{ block.settings.button_label }}
+                  </a>
+                {%- endif -%}
+              </div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "About Us Social",
+  "class": "spaced-section spaced-section--full-width",
+  "tag": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "default": "Multicolumn",
+      "label": "t:sections.multicolumn.settings.title.label"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "default": "Subtitle Featured collection",
+      "label": "t:sections.multicolumn.settings.subtitle.label"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:sections.multicolumn.settings.image_ratio.options__1.label"
+        },
+        {
+          "value": "portrait",
+          "label": "t:sections.multicolumn.settings.image_ratio.options__2.label"
+        },
+        {
+          "value": "square",
+          "label": "t:sections.multicolumn.settings.image_ratio.options__3.label"
+        },
+        {
+          "value": "circle",
+          "label": "t:sections.multicolumn.settings.image_ratio.options__4.label"
+        }
+      ],
+      "default": "adapt",
+      "label": "t:sections.multicolumn.settings.image_ratio.label"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "column",
+      "name": "t:sections.multicolumn.blocks.column.name",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image for background"
+        },
+        {
+          "type": "text",
+          "id": "image_icon",
+          "label": "Image URL for Icon"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "default": "Column",
+          "label": "t:sections.multicolumn.blocks.column.settings.title.label"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "default": "<p>Pair text with an image to focus on your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>",
+          "label": "t:sections.multicolumn.blocks.column.settings.text.label"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "default": "Follow Us",
+          "label": "Button label"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "t:sections.multicolumn.settings.button_link.label"
+        },
+        {
+          "type": "checkbox",
+          "id": "is_email",
+          "label": "Is email form?"
+        },
+        {
+          "type": "select",
+          "id": "social_media",
+          "options": [
+            {
+              "value": "facebook",
+              "label": "Facebook"
+            },
+            {
+              "value": "instagram",
+              "label": "Instagram"
+            },
+            {
+              "value": "email",
+              "label": "Email"
+            },
+            {
+              "value": "other",
+              "label": "Other"
+            }
+          ],
+          "label": "Select the social media"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

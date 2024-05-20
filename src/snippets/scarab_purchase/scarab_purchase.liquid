@@ -1,0 +1,42 @@
+{% include 'scarab_queue' %}
+
+<script type="text/javascript" id="scarab-purchase">
+{% if checkout.order.financial_status == 'paid' or checkout.order.financial_status == 'authorized' %}
+(function() {
+    {% assign orderTotalNum = checkout.subtotal_price | plus: checkout.discounts_amount %}
+    {% assign orderTotalNumFloat = orderTotalNum | times: 1.0 %}
+    {% assign discountPerc = checkout.discounts_amount | divided_by: orderTotalNumFloat | times: 100.0 %}
+
+    {% assign orderCreatedAt = checkout.order.created_at | date: '%s' %}
+    {% assign nowTimestamp = 'now' | date: '%s' %}
+    {% assign orderAgeInSeconds = nowTimestamp | minus: orderCreatedAt %}
+
+    var orderStorageKey = "scarab_order_number";
+    var orderAgeTimeLimitInSeconds = 20;
+
+    if ({{ orderAgeInSeconds }} < orderAgeTimeLimitInSeconds && !hasOrderSent({{ checkout.order_number }})) {
+        ScarabQueue.push(['purchase', {
+            orderId: {{ checkout.order_id }},
+            items: [
+                {% for item in checkout.line_items %}
+                    {% assign discountLineItem = item.line_price | times: discountPerc | divided_by: 100.0 | round: 2 %}
+                    {item: {{item.variant_id}}, price: {{ item.line_price | minus: discountLineItem | divided_by: 100.0 }}, quantity: {{item.quantity}}}{% if forloop.last == false %},{% endif %}
+                {% endfor %}
+            ]
+        }]);
+        setOrderSent({{checkout.order_number}});
+    }
+
+    function hasOrderSent(orderId) {
+        return localStorage.getItem(orderStorageKey) >= orderId;
+  	};
+
+    function setOrderSent(orderId) {
+        localStorage.setItem(orderStorageKey, orderId);
+    }
+})();
+{% endif %}
+</script>
+
+{% include 'scarab_go' %}
+

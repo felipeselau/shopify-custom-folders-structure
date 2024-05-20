@@ -1,0 +1,39 @@
+
+{%- if settings.show_predictive_quick_links -%}
+  {% liquid
+    assign link_label_1 = settings.predictive_quick_link_label_1
+    assign link_url_1 = settings.predictive_quick_link_url_1
+    assign link_label_2 = settings.predictive_quick_link_label_2
+    assign link_url_2 = settings.predictive_quick_link_url_2
+    assign link_label_3 = settings.predictive_quick_link_label_3
+    assign link_url_3 = settings.predictive_quick_link_url_3
+    assign links_label = link_label_1 | append: ',' | append: link_label_2 | append: ',' | append: link_label_3 | split: ','
+    assign links_url = link_url_1 | append: ',' | append: link_url_2 | append: ',' | append: link_url_3 | split: ','
+  %}
+  <div id="predictive-search-quick-links-wrapper" class="predictive-search__results-groups-wrapper">
+    <div class="predictive-search__result-group">
+      <div>
+        <h2 id="predictive-search-quick-links" class="predictive-search__heading text-body caption-with-letter-spacing">
+          {{ 'general.search.quick_links.title' | t}}
+        </h2>
+        <ul id="predictive-search-quick-links-list" class="predictive-search__results-list list-unstyled" role="group">
+          {%- for link_label in links_label -%}
+            {%- assign link_url = links_url[forloop.index0] -%}
+            {%- if link_url != empty -%}
+              <li id="predictive-search-quick-links-{{ forloop.index }}" class="predictive-search__list-item" role="option" aria-selected="false">
+                <a href="{{ link_url }}" class="predictive-search__item link link--text" tabindex="-1">
+                  <div class="predictive-search__item-content predictive-search__item-content--centered">
+                    <p class="predictive-search__item-heading predictive-search__item-query-result h5" aria-label="{{ link_label }}">
+                      {{ link_label }}
+                    </p>
+                  </div>
+                  {% render 'icon-arrow' %}
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </div>
+  </div>
+{%- endif -%}

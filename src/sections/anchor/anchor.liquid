@@ -1,0 +1,22 @@
+{% comment %} 
+  This session is used as a reference for anchor links
+{% endcomment %}
+{% include "anchor", anchor_id: section.settings.anchor_id %}
+
+{% schema %}
+  {
+    "name": "t:sections.anchor.name",
+    "settings":[
+      {
+        "type": "text",
+        "id": "anchor_id",
+        "label": "t:sections.anchor.settings.anchor_id.label"
+      }
+    ],
+      "presets":[
+      {
+        "name": "t:sections.anchor.name"
+      }
+    ]
+  }
+{% endschema %}

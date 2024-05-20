@@ -1,0 +1,200 @@
+{% if section.settings.template == 'all' or template contains section.settings.template %}
+  <style>
+    #shopify-section-marquee {
+      z-index: 4;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.01);
+    }
+
+    .marquee {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      {% if section.settings.enable_custom_colors %}
+        background-color: {{ section.settings.custom_background_color }};
+      {% endif %}
+    }
+
+    .marquee .marquee__message {
+      padding: 1rem 0;
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee {{ section.blocks.size | times: section.settings.marquee_time }}s linear infinite;
+    }
+
+    .marquee .marquee__message span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      {% if section.settings.enable_custom_colors %}
+        color: {{ section.settings.custom_text_color }};
+      {% endif %}
+    }
+    
+    .marquee .marquee__link {
+      padding: 0 5rem;
+      text-decoration: none;
+    }
+
+    {% if section.settings.enable_custom_colors %}
+      .marquee a {
+        color: {{ section.settings.custom_text_color }};
+      }
+    {% endif %}
+
+    .marquee .copy {
+      padding-left: 100vw;
+    }
+
+    @keyframes marquee {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-100%, 0); }
+    }
+  </style>
+
+  <div class="marquee {% unless section.settings.enable_custom_colors %}color-{{ section.settings.color_schema }} gradient{% endunless %}">
+    {% for block in section.blocks %}
+      {% if forloop.first %}
+        <span class="marquee__message h5">
+      {% endif %}
+        <span {% unless forloop.first %}class="copy"{% endunless %}>
+          {%- if block.settings.link != blank -%}
+            <a href="{{ block.settings.link }}" class="h5 marquee__link link link--text focus-inset animate-arrow">
+          {%- endif -%}
+          {{ block.settings.body }}
+          {%- if block.settings.link != blank -%}
+            {% render 'icon-arrow' %}
+          {%- endif -%}
+          {%- if block.settings.link != blank -%}
+            </a>
+          {%- endif -%}
+        </span>
+      {% if forloop.first %}
+        </span>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% schema %}
+  {
+    "name": "t:sections.marquee.name",
+    "max_blocks": 5,
+    "settings": [
+      {
+        "type": "range",
+        "id": "marquee_time",
+        "min": 5,
+        "max": 60,
+        "step": 5,
+        "unit": "s",
+        "label": "t:sections.marquee.settings.time.label",
+        "default": 10
+      },
+      {
+        "type": "select",
+        "id": "color_schema",
+        "label": "t:sections.marquee.settings.color_scheme.label",
+        "options": [
+          {
+            "value": "background-1",
+            "label": "t:sections.marquee.settings.color_scheme.options__1.label"
+          },
+          {
+            "value": "background-2",
+            "label": "t:sections.marquee.settings.color_scheme.options__2.label"
+          },
+          {
+            "value": "inverse",
+            "label": "t:sections.marquee.settings.color_scheme.options__3.label"
+          },
+          {
+            "value": "accent-1",
+            "label": "t:sections.marquee.settings.color_scheme.options__4.label"
+          },
+          {
+            "value": "accent-2",
+            "label": "t:sections.marquee.settings.color_scheme.options__5.label"
+          }
+        ],
+        "default": "accent-1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_custom_colors",
+        "label": "t:sections.marquee.settings.enable_custom_colors.label",
+        "info": "t:sections.marquee.settings.enable_custom_colors.info",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "custom_text_color",
+        "label": "t:sections.marquee.settings.custom_text_color.label",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "custom_background_color",
+        "label": "t:sections.marquee.settings.custom_background_color.label",
+        "default": "#000000"
+      },
+      {
+        "type": "select",
+        "id": "template",
+        "label": "t:sections.marquee.settings.template.label",
+        "default": "all",
+        "options": [
+          {
+            "value": "all",
+            "label": "t:sections.marquee.settings.template.options__1.label"
+          },
+          {
+            "value": "index",
+            "label": "t:sections.marquee.settings.template.options__2.label"
+          },
+          {
+            "value": "product",
+            "label": "t:sections.marquee.settings.template.options__3.label"
+          },
+          {
+            "value": "collection",
+            "label": "t:sections.marquee.settings.template.options__4.label"
+          },
+          {
+            "value": "cart",
+            "label": "t:sections.marquee.settings.template.options__5.label"
+          },
+          {
+            "value": "page",
+            "label": "t:sections.marquee.settings.template.options__6.label"
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "type": "marquee",
+        "name": "t:sections.marquee.blocks.marquee.name",
+        "settings": [
+          {
+            "type": "html",
+            "id": "body",
+            "label": "t:sections.marquee.blocks.marquee.settings.body.label",
+            "default": "Welcome to our store"
+          },
+          {
+            "type": "url",
+            "id": "link",
+            "label": "t:sections.marquee.blocks.marquee.settings.link.label"
+          }
+        ]
+      }
+    ],
+    "default": {
+      "blocks": [
+        {
+          "type": "marquee"
+        }
+      ]
+    }
+  }
+{% endschema %}

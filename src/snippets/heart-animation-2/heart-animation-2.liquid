@@ -1,0 +1,58 @@
+{% liquid
+  assign animation_color = settings.animation_color
+  assign animation_time = settings.animation_time
+%}
+
+<style>
+  #loader-animation #heart-animation-2,
+  #loader-animation #heart-animation-2:before,
+  #loader-animation #heart-animation-2:after {
+    display: block;
+    width: 50px;
+    height: 50px;
+    background-color: {{ animation_color | default: '#df2c2c' }};
+    -webkit-transform: rotateZ(45deg);
+    transform: rotateZ(45deg);
+  }
+
+
+  #loader-animation #heart-animation-2:before,
+  #loader-animation #heart-animation-2:after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  #loader-animation #heart-animation-2:before {
+    transform: translateX(-50%);
+    -webkit-transform: translateX(-50%);
+    animation: animX {{ animation_time | default: '3'  }}s infinite 0.75s;
+    -webkit-animation: animX {{ animation_time | default: '3'  }}s infinite 0.75s;
+  }
+
+  #loader-animation #heart-animation-2:after {
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    animation: animY {{ animation_time | default: '3'  }}s infinite;
+    -webkit-animation: animY {{ animation_time | default: '3'  }}s infinite;
+  }
+
+  @-webkit-keyframes animX {
+    0%, 25% { -webkit-transform: translateX(-50%); transform: translateX(-50%); }
+    50%, 75% { -webkit-transform: translateX(50%); transform: translateX(50%); }
+  }
+  @keyframes animX {
+    0%, 25% { -webkit-transform: translateX(-50%); transform: translateX(-50%); }
+    50%, 75% { -webkit-transform: translateX(50%); transform: translateX(50%); }
+  }
+  @-webkit-keyframes animY {
+    0%, 25% { -webkit-transform: translateY(-50%); transform: translateY(-50%); }
+    50%, 75% { -webkit-transform: translateY(50%); transform: translateY(50%); }
+  }
+  @keyframes animY {
+    0%, 25% { -webkit-transform: translateY(-50%); transform: translateY(-50%); }
+    50%, 75% { -webkit-transform: translateY(50%); transform: translateY(50%); }
+  }
+</style>
+
+<div id="heart-animation-2" style="display: block;"></div>

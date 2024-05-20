@@ -1,0 +1,16 @@
+{% assign coupon_dollar_value = product.metafields.global.plp_coupon_dollar_value %}
+{% assign coupon_percent_value = product.metafields.global.plp_coupon_percent_value %}
+{% assign coupon_name = product.metafields.global.plp_discount_coupon_name %}
+{% assign price = product.price | money_without_currency | replace: '.', '' | replace: ',', '' %}
+
+{% if coupon_dollar_value != blank %}
+  {% assign price_with_discount = price | minus: coupon_dollar_value %}
+{% elsif coupon_percent_value != blank %}
+  {% assign percent = coupon_percent_value | divided_by: 100 %}
+  {% assign discount_amount = price | times: coupon_percent_value | divided_by: 100 %}
+  {% assign price_with_discount = price | minus: discount_amount %}
+{% endif %}
+
+{% if price_with_discount != blank and coupon_name != blank %}
+	<div class="product-coupon-discount">{{ price_with_discount | money_without_trailing_zeros }} with code: {{ coupon_name }}</div>
+{% endif %}

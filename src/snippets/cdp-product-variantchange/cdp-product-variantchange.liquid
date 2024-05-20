@@ -1,0 +1,48 @@
+<script>
+  const variantSwitcher = document.querySelector('variant-radios .product-form__input')
+  
+  variantSwitcher.addEventListener('change', () => {
+    function getCookieId(cookies) {
+      var cookieId = ''
+      cookies.forEach(cookie => {
+        if(cookie.includes('_scid=')) {
+          cookieId = cookie
+        }
+      });
+      return cookieId
+    }
+    function generateRandomUniqueId() {
+      const timestamp = Date.now().toString(16);
+      const randomPart = Math.random().toString(16).substr(2, 4);
+      return timestamp + randomPart;
+    }
+    CDP.report('schutzSiteNavigation', {
+      "type": "PRODUCT_VARIANTS_CHANGE",
+      "taxes": 0,
+      "totalPrice": {{ product.price }},
+      "coupon": "{{ product.metafields.global.plp_discount_coupon_name }}",
+      "shippingtype": "",
+      "city": "{{ customer.addresses[0].city }}",
+      "CookieId": getCookieId(document.cookie.split(';')),
+      "email": "{{ customer.email }}",
+      "productList": [
+        {
+          "quantity": 1,
+          "size": parseInt(event.target.value),
+          "productTitle": "{{ product.title }}",
+          "price": {{ product.price }},
+          "productId": "{{ product.id }}",
+          "color": "{{ product.variants[0].option2 }}",
+          "categoryName": "{{ product.type }}",
+        }
+      ],
+      "step": "",
+      "country": "{{ customer.addresses[0].country }}",
+      "address": "{{ customer.addresses[0].address1 }}",
+      "id": generateRandomUniqueId(),
+      "paymentType": "",
+      "categoryName": "{{ product.type }}",
+      "postalCode": "{{ customer.addresses[0].zip }}"
+    });
+  })
+</script>

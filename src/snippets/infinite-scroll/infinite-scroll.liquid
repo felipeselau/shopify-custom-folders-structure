@@ -1,0 +1,45 @@
+<script>
+  const loadMoreBtn = $('.load-more__btn');
+  const productGrid = $('.product-grid');
+  const loadMoreSpinner = $('.load-more__spinner');
+  const noMoreProducts = $('.no-more-products');
+  var nextUrl = productGrid.data('next-url');
+
+  if (!nextUrl) {
+    loadMoreBtn.hide();
+    noMoreProducts.show();
+  }
+
+  loadMoreBtn.on('click', function () {
+    const productGrid = $('.product-grid');
+    nextUrl = productGrid.data('next-url');
+
+    $.ajax(
+      {
+        url: nextUrl,
+        type: 'GET',
+        dataType: 'html',
+        beforeSend: function () {
+          loadMoreBtn.hide();
+          loadMoreSpinner.show();
+        }
+      }
+    )
+      .done(function (products) {
+        const productGrid = $('.product-grid');
+        const newProducts = $(products).find('.product-grid');
+        const nextPage = newProducts.data('next-url');
+        productGrid.data('next-url', nextPage);
+        productGrid.append(newProducts.html());
+
+        if (nextUrl) {
+          loadMoreBtn.show();
+          loadMoreSpinner.hide();
+        } else {
+          loadMoreBtn.hide();
+          loadMoreSpinner.hide();
+          noMoreProducts.show();
+        }
+      })
+  })
+</script>

@@ -1,0 +1,24 @@
+
+<h1 style="position: absolute; left: -9999px">
+    {{ section.settings.text }}
+</h1>
+
+{% schema %}
+{
+  "name": "t:sections.hidden-heading.name",
+  "tag": "section",
+  "class": "spaced-section spaced-section--full-width",
+  "settings": [
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:sections.hidden-heading.settings.text.label"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:sections.hidden-heading.name"
+    }
+  ]
+}
+{% endschema %}

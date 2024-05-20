@@ -1,0 +1,1046 @@
+<script>
+/*
+===================================
+| DATALAYER ARCHITECTURE: SHOPIFY |
+-----------------------------------
+
+DEFINITION:
+A data layer helps you collect more accurate analytics data, that in turn allows you to better understand what potential buyers are doing on your website and where you can make improvements. It also reduces the time to implement marketing tags on a website, and reduces the need for IT involvement, leaving them to get on with implementing new features and fixing bugs.
+
+RESOURCES:
+http://www.datalayerdoctor.com/a-gentle-introduction-to-the-data-layer-for-digital-marketers/
+http://www.simoahava.com/analytics/data-layer/
+
+AUTHORS:
+Mechelle Warneke = [{
+Email: mechellewarneke@gmail.com,
+Website: mechellewarneke.com,
+BVACCEL: [{
+  Email: mechelle@bvaccel.com,
+  Position: XO Strategist | Technical Web Analyst
+}]
+}];
+
+Tyler Shambora = [{
+Website: tylershambora.com,
+BVACCEL: [{
+  Email: tyler@bvaccel.com,
+  Position: Lead Web Developer
+}]
+}];
+
+EXTERNAL DEPENDENCIES:
+* jQuery
+* jQuery Cookie Plugin v1.4.1 - https://github.com/carhartl/jquery-cookie
+* cartjs - https://github.com/discolabs/cartjs
+
+DataLayer Architecture: Shopify v1.3.1
+COPYRIGHT 2016
+LICENSES: MIT ( https://opensource.org/licenses/MIT )
+*/
+
+/* PRELOADS */ 
+// load jquery if it doesn't exist
+if(!window.jQuery){var jqueryScript=document.createElement('script');jqueryScript.setAttribute('src','https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js');document.head.appendChild(jqueryScript);}
+
+__bva__jQueryinterval = setInterval(function(){
+// --------------------------------------------- wait for jQuery to load
+if(window.jQuery){
+// --------------- run script after jQuery has loaded
+
+// search parameters
+getURLParams = function(name, url){
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+  };
+
+isElementVisible = function(element) {
+  const rect = element.getBoundingClientRect();
+  const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight);
+  const isVisible = (rect.top <= viewHeight) && ((rect.top + rect.height) >= 0);
+  const isPartiallyVisible = (rect.left < window.innerWidth) && (rect.right > 0);
+  return isVisible && isPartiallyVisible;
+}
+
+/* =====================
+| DYNAMIC DEPENDENCIES |
+--------------------- */
+
+__bva__ = {
+  dynamicCart: true,  // if cart is dynamic (meaning no refresh on cart add) set to true
+  debug: false, // if true, console messages will be displayed
+  cart: null,
+  wishlist: null,
+  removeCart: null
+};
+
+customBindings = {
+  cartTriggers: [],
+  viewCart: [],
+  removeCartTrigger: ['cart-remove-button, .cart-notification-remove, button[name="minus"]'],
+  cartVisableSelector: [],
+  promoSubscriptionsSelectors: [],
+  promoSuccess: [],
+  ctaSelectors: [],
+  newsletterSelectors: [],
+  newsletterSuccess: [],
+  searchPage: [],
+  wishlistSelector: [],
+  removeWishlist: [],
+  wishlistPage: [],
+  searchTermQuery: [getURLParams('q')], // replace var with correct query
+};
+
+/* DO NOT EDIT */
+defaultBindings = {
+  cartTriggers: ['form[action="/cart/add"] [type="submit"],.add-to-cart,.cart-btn'],
+  viewCart: ['form[action="/cart"],.my-cart,.trigger-cart,#mobileCart'],
+  removeCartTrigger: ['[href*="/cart/change"]'],
+  cartVisableSelector: ['.inlinecart.is-active,.inline-cart.is-active'],
+  promoSubscriptionsSelectors: [],
+  promoSuccess: [],
+  ctaSelectors: [],
+  newsletterSelectors: ['input.contact_email'],
+  newsletterSuccess: ['.success_message'],
+  searchPage: ['search'],
+  wishlistSelector: [],
+  removeWishlist: [],
+  wishlistPage: []
+};
+
+// stitch bindings
+objectArray = customBindings;
+outputObject = __bva__;
+
+applyBindings = function(objectArray, outputObject){
+  for (var x in objectArray) {  
+    var key = x;
+    var objs = objectArray[x]; 
+    values = [];    
+    if(objs.length > 0){    
+      values.push(objs);
+      if(key in outputObject){              
+        values.push(outputObject[key]); 
+        outputObject[key] = values.join(", "); 
+      }else{        
+        outputObject[key] = values.join(", ");
+      }   
+    }  
+  }
+};
+
+applyBindings(customBindings, __bva__);
+applyBindings(defaultBindings, __bva__);
+
+/* =======================
+| PREREQUISITE LIBRARIES |
+----------------------- */
+  
+  clearInterval(__bva__jQueryinterval);
+
+    // jquery-cookies.js
+    if(typeof $.cookie!==undefined){(function(a){if(typeof define==='function'&&define.amd){define(['jquery'],a)}else if(typeof exports==='object'){module.exports=a(require('jquery'))}else{a(jQuery)}}(function($){var g=/\+/g;function encode(s){return h.raw?s:encodeURIComponent(s)}function decode(s){return h.raw?s:decodeURIComponent(s)}function stringifyCookieValue(a){return encode(h.json?JSON.stringify(a):String(a))}function parseCookieValue(s){if(s.indexOf('"')===0){s=s.slice(1,-1).replace(/\\"/g,'"').replace(/\\\\/g,'\\')}try{s=decodeURIComponent(s.replace(g,' '));return h.json?JSON.parse(s):s}catch(e){}}function read(s,a){var b=h.raw?s:parseCookieValue(s);return $.isFunction(a)?a(b):b}var h=$.cookie=function(a,b,c){if(arguments.length>1&&!$.isFunction(b)){c=$.extend({},h.defaults,c);if(typeof c.expires==='number'){var d=c.expires,t=c.expires=new Date();t.setMilliseconds(t.getMilliseconds()+d*864e+5)}return(document.cookie=[encode(a),'=',stringifyCookieValue(b),c.expires?'; expires='+c.expires.toUTCString():'',c.path?'; path='+c.path:'',c.domain?'; domain='+c.domain:'',c.secure?'; secure':''].join(''))}var e=a?undefined:{},cookies=document.cookie?document.cookie.split('; '):[],i=0,l=cookies.length;for(;i<l;i++){var f=cookies[i].split('='),name=decode(f.shift()),cookie=f.join('=');if(a===name){e=read(cookie,b);break}if(!a&&(cookie=read(cookie))!==undefined){e[name]=cookie}}return e};h.defaults={};$.removeCookie=function(a,b){$.cookie(a,'',$.extend({},b,{expires:-1}));return!$.cookie(a)}}))}
+
+    /* ======================
+    | Begin dataLayer Build |
+    ---------------------- */
+
+    // if debug
+    if(__bva__.debug){
+      console.log('=====================\n| DATALAYER SHOPIFY |\n---------------------');
+      console.log('Page Template: {{ template }}');
+    }
+    
+    window.dataLayer = window.dataLayer || [];  // init data layer if doesn't already exist
+    dataLayer.push({'event': 'cs_begin_dataLayer'}); // begin datalayer
+
+    var template = "{{template}}"; 
+
+    /* Landing Page Cookie
+    -----------------------
+    1. Detect if user just landed on the site
+    2. Only fires if Page Title matches website */
+
+    $.cookie.raw = true;
+    if ($.cookie('landingPage') === undefined || $.cookie('landingPage').length === 0) {
+      var landingPage = true;
+      $.cookie('landingPage', unescape);
+      $.removeCookie('landingPage', {path: '/'});
+      $.cookie('landingPage', 'landed', {path: '/'});
+    } else {
+      var landingPage = false;
+      $.cookie('landingPage', unescape);
+      $.removeCookie('landingPage', {path: '/'});
+      $.cookie('landingPage', 'refresh', {path: '/'});
+    }
+    if (__bva__.debug) {
+      console.log('Landing Page: ' + landingPage);
+    }
+
+    /* Log State Cookie
+    ------------------- */
+    {% if customer %}
+    var isLoggedIn = true;
+    {% else %}
+    var isLoggedIn = false;
+    {% endif %}
+    if (!isLoggedIn) {
+      $.cookie('logState', unescape);
+      $.removeCookie('logState', {path: '/'});
+      $.cookie('logState', 'loggedOut', {path: '/'});
+    } else {
+      if ($.cookie('logState') === 'loggedOut' || $.cookie('logState') === undefined) {
+        $.cookie('logState', unescape);
+        $.removeCookie('logState', {path: '/'});
+        $.cookie('logState', 'firstLog', {path: '/'});
+      } else if ($.cookie('logState') === 'firstLog') {
+        $.cookie('logState', unescape);
+        $.removeCookie('logState', {path: '/'});
+        $.cookie('logState', 'refresh', {path: '/'});
+      }
+    }
+
+    if ($.cookie('logState') === 'firstLog') {
+      var firstLog = true;
+    } else {
+      var firstLog = false;
+    }
+
+    /* ==========
+    | DATALAYERS |
+    ----------- */
+
+    /* DATALAYER: Landing Page
+    --------------------------
+    Fires any time a user first lands on the site. */
+
+    window.DataLayer = {
+      selectColor: function () {
+        $('.select-grouped-item').on('click', function(e) {
+          let productHandle = e.target.getAttribute('href');
+          let productColor = e.target.getAttribute('title');
+          if(!productHandle) {
+            productHandle = e.target.closest('.select-grouped-item').getAttribute('href');
+            productColor = e.target.closest('.select-grouped-item').getAttribute('title');
+          }
+  
+          fetch(`${productHandle}.json`)
+            .then((response) => response.text())
+            .then((responseText) => {
+              var product = JSON.parse(responseText).product;
+              var item = {
+                'item_id'         : String(product.id),
+                'item_variant'    : product.variants[0].id,
+                'item_name'       : product.title,
+                'price'           : Number(product.variants[0].price),
+                'item_brand'      : product.vendor,
+                'item_category'   : product.product_type,
+                'selected_color'  : productColor,
+                'description'     : product.body_html.trim(),
+                'imageURL'        : product.image.src,
+                'productURL'      : window.routes.shop + '/products/' + product.handle
+              };
+
+              var emarsys = {
+                'selected_color'  : productColor,
+              };
+  
+              if (item.item_name) {
+                dataLayer.push({
+                  'event': 'cs_select_color',
+                  item,
+                  emarsys
+                });
+              }
+              
+              if(__bva__.debug){
+                console.log("Product"+" :"+JSON.stringify(item, null, " "));
+              }
+            });
+        })
+      },
+
+      selectSize: function () {
+        $('.product-form__input[data-type="size"] .item label').on('click', function(e) {
+          e.stopImmediatePropagation();
+          let productHandle = e.target.closest('variant-radios').dataset.url;
+          let productSize = e.target.closest('.item').dataset.value;
+  
+          fetch(`${productHandle}.json`)
+            .then((response) => response.text())
+            .then((responseText) => {
+              var product = JSON.parse(responseText).product;
+              var item = {
+                'item_id'         : product.variants[0].sku,
+                'item_variant'    : product.variants[0].id,
+                'item_name'       : product.title,
+                'price'           : Number(product.variants[0].price),
+                'item_brand'      : product.vendor,
+                'item_category'   : product.product_type,
+                'selected_size'   : productSize,
+                'description'     : product.body_html.trim(),
+                'imageURL'        : product.image.src,
+                'productURL'      : window.routes.shop + '/products/' + product.handle
+              };
+
+              var emarsys = {
+                'selected_size'  : productSize,
+              };
+  
+              if (item.item_name) {
+                dataLayer.push({
+                  'event': 'cs_select_size',
+                  item,
+                  emarsys
+                });
+              }
+              
+              if(__bva__.debug){
+                console.log("Product"+" :"+JSON.stringify(item, null, " "));
+              }
+            });
+        })
+      }
+    }
+
+    if ($.cookie('landingPage') === 'landed') {
+      dataLayer.push({
+        'pageType': 'Landing',
+        'event': 'cs_first_time_visitor'
+      });
+    }
+
+    /* DATALAYER: Log State
+    -----------------------
+    1. Determine if user is logged in or not.
+    2. Return User specific data. */
+
+    var logState = {
+      'userProperties': {
+        {% if customer %}
+          visitor_type: "logged_in",
+          customer_id: "{{ customer.id }}",
+          customer_email: "{{ customer.email }}",
+          customer_first_name: "{{ customer.first_name }}",
+          customer_last_name: "{{ customer.last_name }}",
+          customer_phone: {{ customer.default_address.phone | json }},
+          customer_city: {{ customer.default_address.city | json }},
+          customer_zip: {{ customer.default_address.zip | json }},
+          customer_address_1: {{ customer.default_address.address1 | json }},
+          customer_address_2: {{ customer.default_address.address2 | json }},
+          customer_country: {{ customer.default_address.country | json }},
+          customer_province: {{ customer.default_address.province | json }},
+          customer_province_code: {{ customer.default_address.province_code | json }},
+          customer_order_count: "{{ customer.orders_count | json }}",
+          customer_total_spent: "{{ customer.total_spent | json }}",
+          customer_tags: "{{ customer.tags | join: ', ' }}",
+          user_consent: "{{ customer.accepts_marketing | json }}"
+        {% else %}
+          visitor_type: "guest",
+        {% endif %}
+      },
+      'deviceType'      : /iPad/.test(navigator.userAgent)?"tablet":/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent)?"mobile":"desktop",
+      'timeStamp'       : new Date().toISOString(),
+      'currency'      : {{checkout.currency | json}},
+    }
+
+    dataLayer.push(logState);
+
+    /*DATALAYER: Homepage
+    --------------------------- */
+
+    if(document.location.pathname == "/"){
+      var homepage = {
+        'pageType' : 'Homepage',
+        'event'    : 'cs_homepage'
+      };
+      dataLayer.push(homepage);
+      if(__bva__.debug){
+        console.log("Homepage"+" :"+JSON.stringify(homepage, null, " "));
+      }
+      
+      document.querySelectorAll('#CollectionProducts').forEach((element) => {
+        const collectionProducts = JSON.parse(element.textContent);
+        var items = collectionProducts.map((product) => ({
+          'item_id'       : product.variants[0].sku,
+          'item_variant'  : product.variants[0].id,
+          'item_name'     : product.title,
+          'price'         : Number(String(product.variants[0].price).replace(/^(\d{1,})(\d{2})$/, '$1.$2')),
+          'item_brand'    : product.vendor,
+          'item_category' : product.product_type,
+          'item_list_name': document.querySelector('#CollectionProducts').dataset.collection
+        }));
+
+        dataLayer.push({
+          'event': 'cs_view_item_list',
+          items
+        });
+      })
+    }
+
+    /** 
+    * DATALAYER: 404 Pages
+    * Fire on 404 Pages */
+    {% if template contains '404' %}
+      dataLayer.push({
+        'event':'cs_404',
+        'page': window.location.pathname 
+      });
+    {% endif %}
+
+    /* DATALAYER: Blog Articles
+    ---------------------------
+    Fire on Blog Article Pages */
+
+    {% if template contains 'article' %}
+      var blog = {
+        'author'      : '{{article.author}}',
+        'title'       : '{{article.title}}',
+        'dateCreated' : '{{article.created_at}}',
+        'event'       : 'cs_blog'
+      };
+      dataLayer.push(blog);
+      if(__bva__.debug){
+        console.log("Blog"+" :"+JSON.stringify(blog, null, " "));
+      }
+    {% endif %}
+
+    /* DATALAYER: Product List Page (Collections, Category)
+    -------------------------------------------------------
+    Fire on all product listing pages. */
+
+    {% if template contains 'collection' %}
+    var ecommerce = {
+    'items': [
+      {% for product in collection.products %}{
+        'item_id'         : {{product.variants[0].sku | json}},                  
+        'item_variant'    : {{product.selected_variant.title | json}},             
+        'item_name'       : {{product.title | json}},
+        'price'           : Number({{product.price | money_without_currency | replace: ',', '.' | json}}),
+        'item_brand'      : {{product.vendor | json}},
+        'item_category'   : {{product.type | json}},
+        'item_list_name'  : {{collection.title | json}},
+        'imageURL'        : "https:{{product.featured_image.src|img_url:'grande'}}", 
+        'productURL'      : '{{shop.secure_url}}{{product.url}}',
+        'sku'             : {{product.selected_variant.sku | json}},
+      },
+      {% endfor %}]
+    };  
+    dataLayer.push({
+      'productList'     : {{collection.title | json}},
+      'pageType'        : 'Collection',
+      'event'           : 'cs_view_item_list',
+      ecommerce
+    });
+
+    var emarsys = {
+      'content_id'      : '{{collection.id | json}}',
+      'content_title'   : {{collection.title | json}},
+      'content_category': {{collection.type | json}},
+      'content_url'     : '{{ shop.url | append: collection.url }}',
+    };
+    dataLayer.push({
+      'event': 'cs_view_category',
+      emarsys,
+    });
+
+    if(__bva__.debug){
+        console.log("Collection"+" :"+JSON.stringify(ecommerce, null, " "));
+    }
+    {% endif %}
+
+    /* DATALAYER: view_item
+      --------------------------
+      Fire on all Product View pages. */
+    {% if template contains 'product' %}
+      var ecommerce = {
+        'items': [{
+          'item_id'         : {{product.variants[0].sku | json}},
+          'item_variant'    : {{product.variants[0].title | json}},
+          'item_name'       : {{product.title | json}},
+          'price'           : Number({{product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+          'quantity'        : '1',
+          'item_brand'      : {{product.vendor | json}},
+          'item_category'   : {{product.type | json}},
+          'item_list_name'  : {{collection.title | json}},
+        }]
+      };
+      var viewItem = {
+        'event'           : 'cs_view_item',
+        'ecommerce'       : ecommerce,
+      };
+      dataLayer.push(viewItem);
+    
+      /* DATALAYER: add_to_cart
+      --------------------------*/
+      $(__bva__.cartTriggers).click(function(){
+        var addToCart = {                    
+          'event'           : 'cs_add_to_cart',
+          'ecommerce'       : ecommerce,
+        };
+        dataLayer.push(addToCart);
+      });
+      
+      if(__bva__.debug){
+        console.log("Product"+" :"+JSON.stringify(ecommerce, null, " "));
+      }
+
+      window.DataLayer.selectColor();
+      window.DataLayer.selectSize();
+    {% endif %}
+
+    /* Fire when open quick view */
+    $('.product-popup-quickview').on('click', function(e) {
+      let productHandle = e.target.dataset.handle;
+      if(!productHandle) {
+        productHandle = e.target.closest('.product-popup-quickview').dataset.handle;
+      }
+
+      fetch(`/products/${productHandle}.json`)
+        .then((response) => response.text())
+        .then((responseText) => {
+          var product = JSON.parse(responseText).product;
+          var item = {
+            'item_id'         : String(product.id),
+            'item_variant'    : product.variants[0].id,
+            'item_name'       : product.title,
+            'price'           : Number(product.variants[0].price),
+            'item_brand'      : product.vendor,
+            'item_category'   : product.product_type,
+            'description'     : product.body_html.trim(),
+            'imageURL'        : product.image.src,
+            'productURL'      : window.routes.shop + '/products/' + product.handle
+          };
+
+          if (item.item_name) {
+            dataLayer.push({
+              'event': 'cs_select_item',
+              item,
+            });
+            dataLayer.push({
+              'event': 'cs_view_item',
+              item,
+            });
+          }
+          
+          if(__bva__.debug){
+            console.log("Product"+" :"+JSON.stringify(item, null, " "));
+          }
+        });
+      
+      $('.product-popup-modal__content-info').bind('DOMSubtreeModified', function(e){
+        window.DataLayer.selectSize();
+      });
+    })
+
+    /* DATALAYER: Cart View
+    -----------------------
+    1. Fire anytime a user views their cart (non-dynamic) */
+    {% if template contains 'cart' %}
+    var ecommerce = {
+      'currency': {{cart.currency.iso_code | json}},
+      'value': Number({{cart.total_price | divided_by: 100.0 | json}}),
+      'items':[{% for line_item in cart.items %}{
+        'item_id'        : {{line_item.variant.sku | json}},                  
+        'item_variant'    : {{line_item.variant.title | json}},             
+        'item_name'      : {{line_item.product.title | json}},
+        'price'           : Number({{line_item.product.price | money_without_currency | replace: ',', '.' | json}}),
+        'item_brand'      : {{line_item.product.vendor | json}},
+        'item_category'   : {{line_item.product.type | json}},
+        'item_list_name'  : {{line_item.collection.title | json}},
+        'quantity'        : {{line_item.quantity | json}},
+        'discount'		  : {{discount.code | json}}
+      },{% endfor %}],
+    };
+    dataLayer.push({
+      'event'    : 'cs_view_cart',
+      ecommerce
+    });
+
+    function removeItemFromCart(line_item) {
+      var ecommerce = {
+        'remove': {    
+          'products': [{
+            'name'       : line_item.product_title,
+            'id'         : line_item.sku,
+            'price'      : `${line_item.price/100}`,
+            'brand'      : line_item.vendor,
+            'category'   : line_item.product_type,
+            'variant'    : line_item.variant_title,
+            'quantity'   : line_item.quantity,
+          }]
+        }
+      }
+      
+      dataLayer.push({
+        'event': 'arzz_remove_from_cart',
+        ecommerce
+      });
+    }
+
+    $(document).on('click', 'cart-remove-button', function() {
+      var removedSKU = $(this).attr('data-sku');
+      var cartItems = {{ cart.items | json }};
+
+      cartItems.map(function (line_item) {
+        if (line_item.sku != removedSKU) return null
+        return removeItemFromCart(line_item)
+      });
+    });
+    
+    if(__bva__.debug){
+      console.log("Cart"+" :"+JSON.stringify(ecommerce, null, " "));
+    }
+
+    __bva__.cart = ecommerce.items;
+
+    $(__bva__.removeCartTrigger).on('click', function (event) {
+      // ------------------------------------------------------------------- remove from cart
+      
+      __bva__.removeCart = {{ cart.items | json }};
+      
+      var removeFromCart = {
+        'items': __bva__.removeCart.map(function (line_item, index) {
+          return {
+            'item_id'         : line_item.sku,
+            'item_variant'    : line_item.variant_title,
+            'item_name'       : line_item.product_title,
+            'price'           : `${line_item.price/100}`,
+            'item_brand'      : line_item.vendor,
+            'item_category'   : line_item.product_type,
+            'quantity'        : line_item.quantity,
+            'discount'        : line_item?.discounts[0],
+          }
+        }),
+        'event'    : 'cs_remove_from_cart'
+      };
+      __bva__.removeCart = removeFromCart;
+      var cartIDs = [];
+      var removeIDs = [];
+      var removeCart = [];
+      // Remove from cart logic
+      for (var i = __bva__.cart.length - 1; i >= 0; i--) {
+        var x = parseFloat(__bva__.cart[i].item_id);
+        cartIDs.push(x)
+      }
+      for (var i = __bva__.removeCart.items.length - 1; i >= 0; i--) {
+        var x = parseFloat(__bva__.removeCart.items[i].item_id);
+        removeIDs.push(x)
+      }
+      function arr_diff(b, c) {
+        var a = [],
+          diff = [];
+        for (var i = 0; i < b.length; i++) {
+          a[b[i]] = true
+        }
+        for (var i = 0; i < c.length; i++) {
+          if (a[c[i]]) {
+            delete a[c[i]]
+          } else {
+            a[c[i]] = true
+          }
+        }
+        for (var k in a) {
+          diff.push(k)
+        }
+        return diff
+      };
+      var x = arr_diff(cartIDs, removeIDs)[0];
+      for (var i = __bva__.cart.length - 1; i >= 0; i--) {
+        if (__bva__.cart[i].item_id == x) {
+          removeCart.push(__bva__.cart[i])
+        }
+      }
+
+      dataLayer.push(removeFromCart);
+      if (__bva__.debug) {
+        console.log("Cart"+" :"+JSON.stringify(removeCart, null, " "));
+      }
+    
+      // ------------------------------------------------------------------- remove from cart
+
+    });
+    {% endif %}
+
+    /** DATALAYER: Checkout on Shopify Plus **/
+    if(Shopify.Checkout){
+      var ecommerce = {
+        'transaction_id': '{{checkout.order_number  | json}}',
+        'affiliation': {{shop.name | json}},
+        'value': Number({{checkout.total_price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+        'tax': {{checkout.tax_price | money_without_currency | replace: ',','.' | json}},
+        'shipping': {{checkout.shipping_price | money_without_currency | replace: ',','.' | json}},
+        'subtotal': {{checkout.subtotal_price | money_without_currency| replace: ',','.' | json}},
+        'currency': {{checkout.currency | json}},
+        {% for discount in checkout.discounts %}
+        'coupon': {{discount.code | json}},
+        'discount'  : {{discount.amount | money_without_currency | json}},
+        {% endfor %}
+        'email': {{checkout.email | json}},
+        'items':[{% for line_item in checkout.line_items %}{
+          'item_id'        : {{line_item.variant.sku | json}},                  
+          'item_variant'    : {{line_item.variant.title | replace: '&amp;', '&' | json}},             
+          'item_name'      : {{line_item.product.title | replace: '&amp;', '&' | json}},
+          'price'           : Number({{line_item.product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+          'item_brand'      : {{line_item.product.vendor | json}},
+          'item_category'   : {{line_item.product.type | json}},
+          'item_list_name'  : {{line_item.collection.title | json}},
+          'quantity'        : {{line_item.quantity | json}},
+          'discount'		  : {{discount.code | json}}
+          },
+        {% endfor %}],
+        'emarsys': {
+          'items': [{% for line_item in checkout.line_items %}{
+            'content_id'      : '{{line_item.id | json}}',
+            'content_title'   : {{line_item.title | json}},
+            'content_price'   : Number({{line_item.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+            'content_category': {{line_item.type | json}},
+            'content_url'     : '{{line_item.url | json}}',
+          },{% endfor %}]
+        }
+      };
+
+      if(Shopify.Checkout.step){
+        if(Shopify.Checkout.step.length > 0){
+          if (Shopify.Checkout.step === 'contact_information'){
+            dataLayer.push({
+              'event'    :'cs_begin_checkout',
+              'step': 1,
+              ecommerce
+            });
+            dataLayer.push({
+              'event'    :'arzz_begin_checkout',
+              'ecommerce': {
+                'checkout': {
+                  'actionField': {'step': 1},
+                  'products': [{% for line_item in checkout.line_items %}{
+                    'name': {{line_item.product.title | replace: '&amp;', '&' | json}},
+                    'id': {{line_item.variant.sku | json}},
+                    {%- if checkout.currency == "EUR" or checkout.currency == "DKK" -%}
+                    'price': Number({{line_item.product.price | money_without_currency | remove: '.' | replace: ',', '.'}}),
+                    {%- else -%}
+                    'price': Number({{line_item.product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+                    {%- endif -%}
+                    'brand': {{line_item.product.vendor | json}},
+                    'category': {{line_item.product.type | json}},
+                    'variant': {{line_item.variant.title | replace: '&amp;', '&' | json}},
+                    'quantity': {{line_item.quantity | json}},
+                  },{% endfor %}]
+                }
+              }
+            });
+          } else if (Shopify.Checkout.step === 'shipping_method'){
+            dataLayer.push({
+              'event'    :'cs_add_shipping_info',
+              ecommerce
+            });
+            dataLayer.push({
+              'event'    :'arzz_add_shipping_info',
+              'ecommerce': {
+                'checkout': {
+                  'actionField': {'step': 2},
+                  'products': [{% for line_item in checkout.line_items %}{
+                    'name': {{line_item.product.title | replace: '&amp;', '&' | json}},
+                    'id': {{line_item.variant.sku | json}},
+                    {%- if checkout.currency == "EUR" or checkout.currency == "DKK" -%}
+                    'price': Number({{line_item.product.price | money_without_currency | remove: '.' | replace: ',', '.'}}),
+                    {%- else -%}
+                    'price': Number({{line_item.product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+                    {%- endif -%}
+                    'brand': {{line_item.product.vendor | json}},
+                    'category': {{line_item.product.type | json}},
+                    'variant': {{line_item.variant.title | replace: '&amp;', '&' | json}},
+                    'quantity': {{line_item.quantity | json}},
+                  },{% endfor %}]
+                }
+              }
+            });
+          } else if( Shopify.Checkout.step === "payment_method" ){
+            dataLayer.push({
+              'event'    :'cs_add_payment_info',
+              ecommerce
+            });
+            dataLayer.push({
+              'event'    :'arzz_add_payment_info',
+              'ecommerce': {
+                'checkout': {
+                  'actionField': {'step': 3},
+                  'products': [{% for line_item in checkout.line_items %}{
+                    'name': {{line_item.product.title | replace: '&amp;', '&' | json}},
+                    'id': {{line_item.variant.sku | json}},
+                    {%- if checkout.currency == "EUR" or checkout.currency == "DKK" -%}
+                    'price': Number({{line_item.product.price | money_without_currency | remove: '.' | replace: ',', '.'}}),
+                    {%- else -%}
+                    'price': Number({{line_item.product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+                    {%- endif -%}
+                    'brand': {{line_item.product.vendor | json}},
+                    'category': {{line_item.product.type | json}},
+                    'variant': {{line_item.variant.title | replace: '&amp;', '&' | json}},
+                    'quantity': {{line_item.quantity | json}},
+                  },{% endfor %}]
+                }
+              }
+            });
+          }
+        }
+                                
+        /** DATALAYER: Transaction */
+        if(Shopify.Checkout.page == "thank_you"){
+          transactionData = {
+            'transactionNumber'      : {{checkout.order_id | json}},
+            'transactionId'          : {{checkout.order_number | json}},
+            'transactionAffiliation' : {{shop.name | json}},
+            {%- if checkout.currency == "EUR" or checkout.currency == "DKK" -%}
+			'transactionTotal'       : Number({{ checkout.total_price | money_without_currency | remove: '.' | replace: ',', '.' }}),
+            'transactionTax'         : Number({{checkout.tax_price | money_without_currency | remove: '.' | replace: ',', '.' }}),
+            'transactionShipping'    : Number({{checkout.shipping_price | money_without_currency | remove: '.' | replace: ',', '.' }}),
+            'transactionSubtotal'    : Number({{checkout.subtotal_price | money_without_currency | remove: '.' | replace: ',', '.' }}),
+            {% for discount in checkout.discounts %}
+            'coupon' : {{discount.code | json}},
+            'discount': Number({{discount.amount | money_without_currency | remove: '.' | replace: ',', '.' }}),
+            {% endfor %}
+            {%- else -%}
+			'transactionTotal'       : Number({{checkout.total_price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+            'transactionTax'         : Number({{checkout.tax_price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+            'transactionShipping'    : Number({{checkout.shipping_price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+            'transactionSubtotal'    : Number({{checkout.subtotal_price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+            {% for discount in checkout.discounts %}
+            'coupon' : {{discount.code | json}},
+            'discount': Number({{discount.amount | money_without_currency | json}}),
+            {% endfor %}
+            {%- endif -%}
+            'items':[{% for line_item in checkout.line_items %}{
+              'item_id'        : {{line_item.variant.sku | json}},                  
+              'item_variant'    : {{line_item.variant.title | replace: '&amp;', '&' | json}},             
+              'item_name'      : {{line_item.product.title | replace: '&amp;', '&' | json}},
+              'price'           : Number({{line_item.product.price | money_without_currency | json}}.replaceAll(",", "").replace(",", ".")),
+              'item_brand'      : {{line_item.product.vendor | json}},
+              'item_category'   : {{line_item.product.type | json}},
+              'item_list_name'  : {{line_item.collection.title | json}},
+              'quantity'        : {{line_item.quantity | json}},
+              'discount'		  : {{discount.code | json}}
+              },
+            {% endfor %}],
+          }
+          dataLayer.push({
+            'event'    :'cs_purchase',
+            transactionData
+          });
+        }
+      }
+
+      if(__bva__.debug){
+        console.log("Checkout"+" :"+JSON.stringify(ecommerce, null, " "));
+      }
+    }
+
+      /* DATALAYER: Newsletter Subscription
+      ------------------------------------- */
+      __bva__newsletter_fire = 0;
+      $(document).on('click', __bva__.newsletterSelectors, function () {
+        if(__bva__newsletter_fire !== 1){
+        __bva__newsletter_fire = 1;
+        var newsletterCheck = setInterval(function () {
+        // -------------------------------------- begin check interval
+          if ($(__bva__.newsletterSuccess).length > 0) {
+          // ------------------------------------------------------------------ check visible selectors
+            clearInterval(newsletterCheck);
+            dataLayer.push({'event': 'cs_Newsletter Subscription'});
+          // ------------------------------------------------------------------ check visible selectors
+          }
+        // -------------------------------------- begin check interval
+        },500);
+      }
+      });
+
+      /* DATALAYER: Wishlist
+      ------------------------------------- */
+      setTimeout( function(){
+
+        $(__bva__.wishlistSelector).on('click', function () {
+          dataLayer.push(product,
+            {'event': 'cs_Add to Wishlist'});
+          if(__bva__.debug){
+            console.log("Wishlist"+" :"+JSON.stringify(product, null, " "));
+          }
+        });
+
+        if(document.location.pathname == __bva__.wishlistPage){
+          var __bva__productLinks = $('[href*="product"]');
+          var __bva__prods        = [];
+          var __bva__links        = [];
+          var __bva__count        = 1;
+
+          $(__bva__productLinks).each(function(){
+            var href = $(this).attr("href");
+            if(!__bva__links.includes(href)){
+              __bva__links.push(href);
+              $(this).attr("dataLayer-wishlist-item",__bva__count++);
+              jQuery.getJSON(href, function (response) {
+              // --------------------------------------------- get Json response 
+                __bva__.wishlist = response;
+                var wishlistproducts = {
+                'item_id'   : __bva__.wishlist.product.id,
+                'item_name' : __bva__.wishlist.product.title,
+                };
+                __bva__prods.push(wishlistproducts);
+              // --------------------------------------------- get Json response 
+              });
+            }
+          });
+
+          dataLayer.push({'items': __bva__prods, 
+            'pageType' : 'Wishlist',
+            'event'    : 'cs_add_to_wishlist'});
+          }
+
+        var __bva__count = 1;
+        var wishlistDel  = $(__bva__.removeWishlist);
+        wishlistDel.each(function(){
+          $(this).attr("dataLayer-wishlist-item-del",__bva__count++);
+        });
+
+        $(__bva__.removeWishlist).on('click', function(){
+          var index = $(this).attr("dataLayer-wishlist-item-del");
+          var link  = $("[dataLayer-wishlist-item="+index+"]").attr("href");
+          jQuery.getJSON(link, function (response) {
+          // --------------------------------------------- get Json response 
+            __bva__.wishlist     = response;
+            var wishlistproducts = {
+              'id'   : __bva__.wishlist.product.id,
+              'name' : __bva__.wishlist.product.title,
+            };
+
+            dataLayer.push({'products': wishlistproducts,
+            'pageType' : 'Wishlist',
+            'event'    : 'cs_Wishlist Delete Product'});
+          // --------------------------------------------- get Json response 
+          });
+        })
+      }, 3000);
+
+      /* DATALAYER: CTAs
+      ------------------ */
+      $(__bva__.ctaSelectors).on('click', function () {
+        var ctaCheck = setInterval(function () {
+        // -------------------------------------- begin check interval
+          if ($(__bva__.ctaSuccess).length > 0) {
+          // ------------------------------------------------------------------ check visible selectors
+            clearInterval(ctaCheck);
+            dataLayer.push({'event': 'cs_CTA'});
+          // ------------------------------------------------------------------ check visible selectors
+          }
+        // -------------------------------------- begin check interval
+        },500);
+      });
+
+      /* DATALAYER: Promo Subscriptions
+      --------------------------------- */
+      $(__bva__.promoSubscriptionsSelectors).on('click', function () {
+        var ctaCheck = setInterval(function () {
+        // -------------------------------------- begin check interval
+          if ($(__bva__.promoSuccess).length > 0) {
+          // ------------------------------------------------------------------ check visible selectors
+            clearInterval(ctaCheck);
+            dataLayer.push({'event': 'cs_Promo Subscription'});
+          // ------------------------------------------------------------------ check visible selectors
+          }
+        // -------------------------------------- begin check interval
+        },500);
+      });
+
+    /** DOM Ready **/	
+    $(document).ready(function() {
+      /** DATALAYER: Banners viewed **/
+      const trackingBanners = function() {
+        $('.ga-event').each(async function(index) {
+          const isVisible = isElementVisible(this);
+          if (!isVisible) return;
+
+          const wasViewed = this.classList.contains('ga-viewed');
+          if (wasViewed) return;
+          this.classList.add("ga-viewed");
+
+          const eventLabel = this.getAttribute('data-event-label');
+          const eventLabelMobile = this.getAttribute('data-event-label-mobile');
+          const eventPage = this.getAttribute('data-event-page');
+          const eventCollection = this.getAttribute('data-event-collection');
+          const isMobile = window.innerWidth <= 750;
+          const promotionId = isMobile ? eventLabelMobile : eventLabel;
+          var items = [];
+        
+          if (eventCollection) {
+            await fetch(`{{ shop.url }}/collections/${eventCollection}/products.json`)
+            .then((response) => response.text())
+            .then((responseText) => {
+              const products = JSON.parse(responseText).products;
+              products.splice(20);
+              items = products.map((product) => ({
+                'item_id': String(product.id),
+                'item_name': product.title,
+                'creative_name': eventCollection,
+                'price': Number(product.variants[0].price),
+              }));
+            });
+          }
+          
+          const promotionData = {
+            'event': 'cs_view_promotion',
+            'creative_name': promotionId,
+            'creative_slot': eventPage,
+            promotion_id: promotionId,
+            promotion_name: promotionId,
+            items,
+          };
+          
+          dataLayer.push(promotionData);
+          if (__bva__.debug) {
+            console.log('view_promotion: ', promotionData);
+          }
+
+          this.addEventListener('click', function() {
+            promotionData.event = 'cs_select_promotion';
+            dataLayer.push(promotionData);
+            if (__bva__.debug) {
+              console.log('select_promotion: ', promotionData);
+            }
+          });
+        });
+      }
+
+      trackingBanners();
+      $(window).scroll(trackingBanners);
+
+      /** DATALAYER: Search Results */
+      var searchPage = new RegExp(__bva__.searchPage, "g");
+      if(document.location.pathname.match(searchPage)){
+        var ecommerce = {
+          items :[{% for product in search.results %}{
+            'item_id'        : "{{product.id | json}}",                  
+            'item_variant'    : {{product.variant.title | json}},             
+            'item_name'      : {{product.title | json}},
+            'price'           : Number({{product.price | money_without_currency | replace: ',', '.' | json}}),
+            'item_brand'      : {{product.vendor | json}},
+            'item_category'   : {{product.type | json}},
+            'item_list_name'  : {{product.collection.title | json}},
+          },{% endfor %}],
+        };
+        dataLayer.push({
+          'pageType'   : "Search",
+          'search_term' : __bva__.searchTermQuery,                                       
+          'event'      : "cs_search",
+          'item_list_name'  : {{line_item.collection.title | json}},
+          ecommerce
+        });    
+      }
+    }); // document ready
+
+  // --------------- run script after jQuery has loaded
+  }
+}, 500);
+</script>

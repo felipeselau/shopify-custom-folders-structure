@@ -1,0 +1,27 @@
+{{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{{ 'component-quickview.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'quickview.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
+
+<modal-dialog id="PopupModal-quickview" class="product-popup-modal product-popup-modal-quickview">
+  <div role="dialog" aria-label="Quickview" aria-modal="true" class="product-popup-modal__content" tabindex="-1">
+    <button id="ModalClose-quickview" type="button" class="product-popup-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
+    <div class="load__spinner"></div>
+    <div class="product-popup-modal__content-info variant-image-as-color product-with-thumb">
+    </div>
+  </div>
+</modal-dialog> 
+
+{% if settings.size_chart_qv_text %}
+<modal-dialog id="PopupModal-size-chart" class="product-popup-modal">
+  <div role="dialog" aria-label="{{ settings.size_chart_qv_text }}" aria-modal="true" class="product-popup-modal__content" tabindex="-1">
+    <button id="ModalClose-size-chart" type="button" class="product-popup-modal__toggle" aria-label="{{ 'accessibility.close' | t }}">{% render 'icon-close' %}</button>
+    <div>
+      <h2 class="h2">{{ settings.size_chart_qv_text }}</h2>
+      {{ settings.size_chart_qv_page.content }}
+    </div>
+  </div>
+</modal-dialog>
+{% endif %}

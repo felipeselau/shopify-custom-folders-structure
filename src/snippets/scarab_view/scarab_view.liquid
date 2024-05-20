@@ -1,0 +1,7 @@
+<script id="scarab-view">
+{% if product.selected_variant.id %}
+  ScarabQueue.push(['view', '{{product.selected_variant.id}}']);
+{% else %}
+  ScarabQueue.push(['view', 'g/{{product.id}}']);
+{% endif %}
+</script>

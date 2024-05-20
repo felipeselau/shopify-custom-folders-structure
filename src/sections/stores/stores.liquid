@@ -1,0 +1,98 @@
+
+{{ 'section-stores.css' | asset_url | stylesheet_tag }}
+
+<div class="page-width">
+  <h1 class="page-title">{{ page.title }}</h1>
+  <div class="stores">
+    {%- for block in section.blocks -%}
+      <div class="store">
+        {% if block.settings.image != blank %}
+          <div class="image-store" style="background-image: url({{ block.settings.image | img_url: 'master' }});"></div>
+        {% endif %}
+        <div class="store-content">
+          {% if block.settings.heading != blank %}
+            <h2>{{ block.settings.heading }}</h2>
+          {% endif %}
+          {% if block.settings.address != blank %}
+            <address>
+              {{ block.settings.address }}
+            </address>
+          {% endif %}
+          {% if block.settings.opening_hours != blank %}
+            <h3 class="opening-hours">
+              {{ block.settings.opening_hours }}
+            </h3>
+            <p>{{ block.settings.opening_hours_text }}</p>
+          {% endif %}
+          {% if block.settings.google_location != blank %}
+            {{ block.settings.google_location }}
+          {% endif %}
+          {% if block.settings.go_to_location != blank and block.settings.go_to_location_label != blank %}
+            <a class="go-to-location" href="{{ block.settings.go_to_location }}">{{ block.settings.go_to_location_label }}</a>
+          {% endif %}
+        </div>
+      </div>
+    {%- endfor -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Stores",
+  "tag": "section",
+  "class": "spaced-section spaced-section--full-width stores-section",
+  "blocks": [
+    {
+      "type": "text",
+      "name": "Store",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image location"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Title location",
+          "default": "Title location"
+        },
+        {
+          "type": "textarea",
+          "id": "address",
+          "label": "Address",
+          "default": "<p>Madison AveNew York, NY</p>"
+        },
+        {
+          "type": "text",
+          "id": "opening_hours",
+          "label": "Title to opening hours",
+          "default": "Opening hours"
+        },
+        {
+          "type": "textarea",
+          "id": "opening_hours_text",
+          "label": "Text to opening hours",
+          "default": "Monday-Friday: 11AM - 8PM <br>Saturday-Sunday: 12PM - 6PM"
+        },
+        {
+          "type": "textarea",
+          "id": "google_location",
+          "label": "Iframe of Google location"
+        },
+        {
+          "type": "text",
+          "id": "go_to_location_label",
+          "label": "Label of button to go to location",
+          "default": "Get location"
+        },
+        {
+          "type": "text",
+          "id": "go_to_location",
+          "label": "Button to go to location"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

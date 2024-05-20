@@ -1,0 +1,59 @@
+{{ 'component-rte.css' | asset_url | stylesheet_tag }}
+{{ 'section-faqs-menu.css' | asset_url | stylesheet_tag }}
+{{ 'component-accordion.css' | asset_url | stylesheet_tag }}
+
+<style>
+  #MainContent {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    max-width: var(--page-width);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    background: none;
+  }
+  #MainContent div:first-child {
+    grid-row: span 9999;
+  }
+
+  .client-services__nav {
+    list-style: none;
+    padding: 0;
+  }
+</style>
+
+<div class="spaced-section">
+  <div class="page-width">
+    <div class="sidebar-client-services">
+      <h1>
+        {{ page.title }}
+      </h1>
+      {% assign nav = section.settings.faqs_menu %}
+
+      <ul class="client-services__nav">
+        {% for link in nav.links %}
+          <li>
+            {% assign link_class = 'client-services__link' %}
+            {% if link.active %}
+              {% assign link_class = link_class | append: ' active' %}
+            {% endif %}
+            <a aria-current="page" class="{{ link_class }}" href="{{ link.url }}">{{ link.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "FAQs Menu",
+    "settings": [
+      {
+        "type": "link_list",
+        "id": "faqs_menu",
+        "label": "FAQs menu"
+      }
+    ]
+  }
+{% endschema %}

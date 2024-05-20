@@ -1,0 +1,79 @@
+.animal-print {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/animal.png?v=1635345598');
+}
+
+.animal {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/animal.png?v=1635345598');
+}
+
+.silver {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/silver.png?v=1635345598');
+}
+
+.gold {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/gold.png?v=1635345598');
+}
+
+.transparent {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/clear.png?v=1635345598');
+}
+
+.multicolor {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/multi.png?v=1635345598');
+}
+
+.metallic {
+  background-image: url('https://cdn.shopify.com/s/files/1/0247/6975/files/metallic.png?v=1635345598');
+}
+
+.eggshell {
+  background-color: #ffffcc;
+}
+
+.pink {
+  background-color: #ff3399;
+}
+
+.brown {
+  background-color:#663333;
+}
+
+.gray {
+  background-color: #666666;
+}
+
+.white {
+  background-color: #fff;
+}
+
+.red {
+  background-color: #e30c0c;
+}
+
+.black {
+  background-color: #000;
+}
+
+.purple {
+  background-color: #9966cc;
+}
+
+.green {
+  background-color: #66cc66;
+}
+
+.yellow {
+  background-color: #ffcc33;
+}
+
+.blue {
+  background-color:#0106c8;
+}
+
+.orange {
+  background-color: #f46624;
+}
+
+.beige {
+  background-color: #cc9966;
+}

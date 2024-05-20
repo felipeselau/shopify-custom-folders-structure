@@ -1,0 +1,26 @@
+<script type="text/javascript">
+  (function () {
+    const elementsToTrack = document.querySelectorAll(".ga-event");
+    for (var i = 0; i < elementsToTrack.length; i++) {
+      elementsToTrack[i].addEventListener('click', function () {
+        var eventLabelMobile = this.getAttribute("data-event-label-mobile");
+        var eventLabel = this.getAttribute("data-event-label");
+        var eventPage = this.getAttribute("data-event-page");
+
+        if (window.innerWidth < 749 && eventLabelMobile) {
+          eventLabel = eventLabelMobile;
+        }
+
+        if (!eventLabel) return;
+        ga('send', 'event', eventPage, 'click', eventLabel, 1);
+      });
+    }
+    
+    const productSizeGuide = document.querySelector('.product__info-container .product-popup-modal__button:not(.no-js)');
+    if (productSizeGuide) {
+      productSizeGuide.addEventListener('click', () => {
+        ga('send', 'event', 'Click Size Guide', 'click', 'Click Size Guide', 1);
+      })
+    }
+  })()
+</script>

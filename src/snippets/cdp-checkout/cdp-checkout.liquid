@@ -1,0 +1,54 @@
+{% capture product_list %}
+  {% for item in checkout.line_items %}
+    {
+      "quantity": {{ item.quantity }},
+      "size": {{ item.variant.option1 }},
+      "productTitle": "{{ item.title }}",
+      "price": {{ item.price }},
+      "productId": "{{ item.product_id }}",
+      "color": "{{ item.variant.option2 }}",
+      "categoryName": "{{ item.vendor }}",
+    },
+  {% endfor %}
+{% endcapture %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    function getCookieId(cookies) {
+      var cookieId = ''
+      cookies.forEach(cookie => {
+        if(cookie.includes('_scid=')) {
+          cookieId = cookie
+        }
+      });
+      return cookieId
+    }
+
+    function generateRandomUniqueId() {
+      const timestamp = Date.now().toString(16);
+      const randomPart = Math.random().toString(16).substr(2, 4);
+      return timestamp + randomPart;
+    }
+    
+    CDP.report('schutzSiteNavigation', {
+      "type": "CHECKOUT",
+      "taxes": {{ checkout.tax_price }},
+      "totalPrice": Shopify.Checkout.totalPrice,
+      "coupon": "{{ checkout.discount_applications[0].total_allocated_amount }}",
+      "shippingtype": "{{ checkout.shipping_method.title }}",
+      "city": "{{ checkout.shipping_address.city }}",
+      "CookieId": getCookieId(document.cookie.split(';')),
+      "email": "{{ checkout.email }}",
+      "productList": [
+        {{ product_list }}
+      ],
+      "step": Shopify.Checkout.step,
+      "country": "{{ checkout.shipping_address.country }}",
+      "address": "{{ checkout.shipping_address.address1 }}, {{ checkout.shipping_address.address2 }}",
+      "id": generateRandomUniqueId(),
+      "paymentType": "{{ checkout.payment_gateway }}",
+      "categoryName": "",
+      "postalCode": "{{ checkout.shipping_address.zip }}"
+    });
+  });
+</script>

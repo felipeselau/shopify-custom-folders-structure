@@ -1,0 +1,86 @@
+{% liquid
+  assign animation_color = settings.animation_color
+  assign animation_time = settings.animation_time
+%}
+
+<style>
+  #loader-animation #heart {
+    position: relative;
+    width: 100px;
+    height: 90px;
+    -webkit-animation: heart {{ animation_time }}s infinite;
+    animation: heart {{ animation_time }}s infinite;
+    display: inline-block;
+    top: 25px;
+  }
+
+  #loader-animation #heart:before,
+  #loader-animation #heart:after {
+    position: absolute;
+    content: "";
+    left: 50px;
+    top: 0;
+    width: 50px;
+    height: 80px;
+    background: {{ animation_color | default: '#000000' }}
+    ;
+    -moz-border-radius: 50px 50px 0 0;
+    border-radius: 50px 50px 0 0;
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    -webkit-transform-origin: 0 100%;
+    -moz-transform-origin: 0 100%;
+    -ms-transform-origin: 0 100%;
+    -o-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+  }
+
+  #loader-animation #heart:after {
+    left: 0;
+    -webkit-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    transform: rotate(45deg);
+    -webkit-transform-origin: 100% 100%;
+    -moz-transform-origin: 100% 100%;
+    -ms-transform-origin: 100% 100%;
+    -o-transform-origin: 100% 100%;
+    transform-origin: 100% 100%;
+  }
+
+  @-webkit-keyframes heart {
+    0% { -webkit-transform: scale(0.8, 0.8); opacity: 0.95; }
+    16% { -webkit-transform: scale(1, 1); opacity: 1; }
+    17% { background-color: rgba(192, 57, 43, 0); }
+    33% { -webkit-transform: scale(0.8, 0.8); opacity: 0.95; }
+    49% { -webkit-transform: scale(1, 1); opacity: 1; }
+    50% { background-color: rgba(192, 57, 43, 0); }
+    100% { -webkit-transform: scale(0.8, 0.8); opacity: 0.95; }
+  }
+
+  @-moz-keyframes heart {
+    0% { -moz-transform: scale(0.8, 0.8); opacity: 0.95; }
+    16% { -moz-transform: scale(1, 1); opacity: 1; }
+    17% { background-color: rgba(192, 57, 43, 0); }
+    33% { -moz-transform: scale(0.8, 0.8); opacity: 0.95; }
+    49% { -moz-transform: scale(1, 1); opacity: 1; }
+    50% { background-color: rgba(192, 57, 43, 0); }
+    100% { -moz-transform: scale(0.8, 0.8); opacity: 0.95; }
+  }
+
+  @keyframes heart {
+    0% { transform: scale(0.8, 0.8); opacity: 0.95; }
+    16% { transform: scale(1.1, 1); opacity: 1; }
+    17% { background-color: rgba(192, 57, 43, 0); }
+    33% { transform: scale(0.8, 0.8); opacity: 0.95; }
+    49% { transform: scale(1.1, 1); opacity: 1; }
+    50% { background-color: rgba(192, 57, 43, 0); }
+    100% { transform: scale(0.8, 0.8); opacity: 0.95; }
+  }
+</style>
+
+<div id="heart"></div>

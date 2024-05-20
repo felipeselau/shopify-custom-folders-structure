@@ -1,0 +1,107 @@
+.collection-hero__inner {
+  display: flex;
+  flex-direction: column; 
+  margin-bottom: 2rem; 
+}
+
+.collection-hero--with-image .collection-hero__inner {
+  margin-bottom: 0;
+  padding-bottom: 2rem;
+}
+
+@media screen and (min-width: 750px) {
+  .collection-hero--with-image .collection-hero__inner {
+    padding-bottom: 0;
+  }
+}
+
+.collection-hero__text-wrapper {
+  flex-basis: 100%;
+}
+
+@media screen and (min-width: 750px) {
+  .collection-hero {
+    padding: 0;
+  }
+
+  .collection-hero__inner {
+    align-items: center;
+    flex-direction: row;
+    padding-bottom: 0;
+  }
+}
+
+.collection-hero__title {
+  margin: 5rem 0 0;
+  font-family: "Schutz Condensed";
+  font-size: 1.5rem;
+}
+
+.sr-only {
+  position: absolute;
+  margin: 0;
+  left: -999px;
+}
+
+.collection-hero__description {
+  margin-top: 1.5rem;
+  font-size: 1.5rem;
+  line-height: 1.5;
+  font-family: "Schutz Condensed";
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+@media screen and (min-width: 750px) {
+  .collection-hero__description {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .collection-hero__description {
+    max-width: 100%;
+  }
+
+  .collection-hero--with-image .collection-hero__description {
+    max-width: 100%;
+  }
+}
+
+.collection-hero--with-image .collection-hero__title {
+  margin: 0;
+}
+
+.collection-hero--with-image .collection-hero__text-wrapper {
+  padding: 5rem 0 4rem;
+}
+
+.collection-hero__image-container.metafield-image.media img {
+  position: static;
+}
+
+@media screen and (max-width: 749px) {
+  .collection-hero__image-container {
+    height: 20rem;
+  }
+
+  .collection-hero__image-container.metafield-image {
+    height: auto;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .collection-hero--with-image .collection-hero__text-wrapper {
+    padding: 4rem 2rem 4rem 0;
+    flex-basis: 50%;
+  }
+
+  .collection-hero__image-container {
+    align-self: stretch;
+    flex: 1 0 50%;
+    min-height: 20rem;
+  }
+
+  .collection-hero__image-container.metafield-image {
+    min-height: auto;
+  }
+}

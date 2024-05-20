@@ -1,0 +1,165 @@
+{{ 'component-collection-hero.css' | asset_url | stylesheet_tag }}
+
+<div class="collection-hero{% if section.settings.show_collection_image and collection.image %} collection-hero--with-image{% endif %}">
+
+  {%- comment -%} Show featured image collection with full width {%- endcomment -%}
+  {% if section.settings.show_collection_image and collection.image and section.settings.show_collection_image_full %}
+    <div class="collection-hero__image-container media">
+      <img
+        srcset="{{ collection.image | img_url: 'master' }}"
+        src="{{ collection.image | img_url: 'master' }}"
+        sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc(50vw - 130px), calc(50vw - 55px)"
+        alt="{{ collection.title | escape }}"
+       
+        width="{{ collection.image.width }}"
+        height="{{ collection.image.height }}"
+      >
+    </div>
+  {% else %}
+      
+    {%- comment -%} Show image with metafield desktop {%- endcomment -%}
+    {% if section.settings.collection_image_desktop_meta and section.settings.show_collection_image_full and collection.metafields.global.image_desktop != blank %}
+      {% if collection.metafields.global.primary_banner_link != blank %}
+        <a href="{{ collection.metafields.global.primary_banner_link }}" class="ga-event" 
+          data-event-label="{% if collection.metafields.custom.ga_tracking_for_primary_banner != blank %}{{ collection.metafields.custom.ga_tracking_for_primary_banner }}{% endif %}" 
+          data-event-page="Collection Banners"
+        >
+      {% endif %}
+        <div class="collection-hero__image-container metafield-image media {% if collection.metafields.global.image_mobile != blank %}small-hide{% endif %}">
+          <img
+            srcset="{{ collection.metafields.global.image_desktop | img_url: 'master' }}"
+            src="{{ collection.metafields.global.image_desktop | img_url: 'master' }}"
+            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc(50vw - 130px), calc(50vw - 55px)"
+            alt="{{ collection.title | escape }}"
+           
+            width="{{ collection.metafields.global.image_desktop.width }}"
+            height="{{ collection.metafields.global.image_desktop.height }}"
+          >
+        </div>
+      {% if collection.metafields.global.primary_banner_link != blank %}</a>{% endif %}
+    {% endif %}
+
+    {%- comment -%} Show image with metafield mobile {%- endcomment -%}
+    {% if section.settings.collection_image_mobile_meta and section.settings.show_collection_image_full and collection.metafields.global.image_mobile != blank %}
+      {% if collection.metafields.global.primary_banner_link != blank %}
+        <a href="{{ collection.metafields.global.primary_banner_link }}" class="ga-event" 
+          data-event-label="{% if collection.metafields.custom.ga_tracking_for_primary_banner != blank %}{{ collection.metafields.custom.ga_tracking_for_primary_banner }}{% endif %}" 
+          data-event-page="Collection Banners"
+        >
+      {% endif %}
+        <div class="collection-hero__image-container metafield-image media {% if collection.metafields.global.image_desktop != blank %}hidden small-show{% endif %}">
+          <img
+            srcset="{{ collection.metafields.global.image_mobile | img_url: 'master' }}"
+            src="{{ collection.metafields.global.image_mobile | img_url: 'master' }}"
+            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc(50vw - 130px), calc(50vw - 55px)"
+            alt="{{ collection.title | escape }}"
+           
+            width="{{ collection.metafields.global.image_mobile.width }}"
+            height="{{ collection.metafields.global.image_mobile.height }}"
+          >
+        </div>
+      {% if collection.metafields.global.primary_banner_link != blank %}</a>{% endif %}
+    {% endif %}
+  {% endif %}
+
+  {%- comment -%} Show featured image collection in half of screen {%- endcomment -%}
+  {% unless section.settings.show_collection_image_full %}
+    {%- if section.settings.show_collection_image and collection.image -%}
+      <div class="collection-hero__inner page-width">
+        <div class="collection-hero__image-container media">
+          <img
+            srcset="{%- if collection.image.width >= 165 -%}{{ collection.image | img_url: '165x' }} 165w,{%- endif -%}
+              {%- if collection.image.width >= 360 -%}{{ collection.image | img_url: '360x' }} 360w,{%- endif -%}
+              {%- if collection.image.width >= 535 -%}{{ collection.image | img_url: '535x' }} 535w,{%- endif -%}
+              {%- if collection.image.width >= 750 -%}{{ collection.image | img_url: '750x' }} 750w,{%- endif -%}
+              {%- if collection.image.width >= 1070 -%}{{ collection.image | img_url: '1070x' }} 1070w,{%- endif -%}
+              {%- if collection.image.width >= 1500 -%}{{ collection.image | img_url: '1500x' }} 1500w,{%- endif -%}"
+            src="{{ collection.image | img_url: '750x' }}"
+            sizes="(min-width: {{ settings.page_width }}px) {{ settings.page_width | minus: 100 | divided_by: 2 }}px, (min-width: 750px) calc(50vw - 130px), calc(50vw - 55px)"
+            alt="{{ collection.title | escape }}"
+           
+            width="{{ collection.image.width }}"
+            height="{{ collection.image.height }}"
+          >
+        </div>
+      </div>
+    {%- endif -%}
+  {% endunless %}
+
+  <div class="collection-hero__text-wrapper page-width">
+    {% if section.settings.show_collection_title %}
+      <h1 class="collection-hero__title sr-only">
+        <span class="visually-hidden">{{ 'sections.collection_template.title' | t }}: </span>
+        {{- collection.title | escape -}}
+      </h1>
+    {% endif %}
+
+    {%- if section.settings.show_collection_description and collection.description -%}
+      <div class="collection-hero__description rte">{{ collection.description }}</div>
+    {%- endif -%}
+  </div>
+
+  <style>
+    {%- if section.settings.content_color != blank -%}
+      .collection-hero__title {
+        color: {{ section.settings.content_color }};
+      }
+    {% endif %}
+  </style>
+</div>
+<div id="ctb_placeholder"></div>
+
+{% schema %}
+{
+  "name": "t:sections.main-collection-banner.name",
+  "class": "spaced-section spaced-section--full-width",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:sections.main-collection-banner.settings.paragraph.content"
+    },
+    {
+      "type": "color",
+      "id": "content_color",
+      "label": "t:sections.main-collection-banner.settings.content_color.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_title",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.show_collection_title.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_description",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.show_collection_description.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.show_collection_image.label",
+      "info": "t:sections.main-collection-banner.settings.show_collection_image.info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image_full",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.show_collection_image_full.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "collection_image_desktop_meta",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.collection_image_desktop_meta.label"
+    },
+    {
+      "type": "checkbox",
+      "id": "collection_image_mobile_meta",
+      "default": false,
+      "label": "t:sections.main-collection-banner.settings.collection_image_mobile_meta.label"
+    }
+  ]
+}
+{% endschema %}
