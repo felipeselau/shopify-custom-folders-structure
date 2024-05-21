@@ -5,6 +5,9 @@ node_modules
 .env
 
 # Shopify Files
-src/assets
-src/sections
-src/snippets
+src/assets/*
+src/sections/*
+src/snippets/*
+
+# Shopify Folder
+ecommerce-shopify-schutz
